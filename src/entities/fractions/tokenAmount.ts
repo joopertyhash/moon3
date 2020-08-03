@@ -3,7 +3,7 @@ import invariant from 'tiny-invariant'
 import JSBI from 'jsbi'
 import { BigintIsh, Rounding, SolidityType, TEN } from '../../constants'
 import { parseBigintIsh, validateSolidityTypeInstance } from 'utils';
-import { Fraction } from 'entities';
+import { Fraction } from './fraction';
 import toFormat from 'toformat'
 import _Big from 'big.js'
 
@@ -57,3 +57,4 @@ export class TokenAmount extends Fraction {
     return new Big(this.numerator.toString()).div(this.denominator.toString()).toFormat(format)
   }
 }
+
