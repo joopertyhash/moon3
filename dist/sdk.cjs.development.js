@@ -8,11 +8,9 @@ var JSBI = _interopDefault(require('jsbi'));
 var invariant = _interopDefault(require('tiny-invariant'));
 var warning = _interopDefault(require('tiny-warning'));
 var address = require('@ethersproject/address');
-var utils = require('utils');
-var entities = require('entities');
-var toFormat = _interopDefault(require('toformat'));
-var _Big = _interopDefault(require('big.js'));
 var _Decimal = _interopDefault(require('decimal.js-light'));
+var _Big = _interopDefault(require('big.js'));
+var toFormat = _interopDefault(require('toformat'));
 var contracts = require('@ethersproject/contracts');
 var networks = require('@ethersproject/networks');
 var providers = require('@ethersproject/providers');
@@ -347,7 +345,6 @@ function sortedInsert(items, add, maxSize, comparator) {
   }
 }
 
-var _ETHER;
 /**
  * Represents an ERC20 token and Ether with a unique address and some metadata.
  */
@@ -387,84 +384,11 @@ var Token = /*#__PURE__*/function () {
 function currencyEquals(currencyA, currencyB) {
   return currencyA.address.toLowerCase() === currencyB.address.toLowerCase();
 }
-var ETHER = (_ETHER = {}, _ETHER[exports.ChainId.MAINNET] = /*#__PURE__*/new Token(exports.ChainId.MAINNET, ZERO_ADDRESS, 18, 'ETH', 'Ethereum'), _ETHER[exports.ChainId.ROPSTEN] = /*#__PURE__*/new Token(exports.ChainId.ROPSTEN, ZERO_ADDRESS, 18, 'ETH', 'Ethereum'), _ETHER[exports.ChainId.RINKEBY] = /*#__PURE__*/new Token(exports.ChainId.RINKEBY, ZERO_ADDRESS, 18, 'ETH', 'Ethereum'), _ETHER[exports.ChainId.GÖRLI] = /*#__PURE__*/new Token(exports.ChainId.GÖRLI, ZERO_ADDRESS, 18, 'ETH', 'Ethereum'), _ETHER[exports.ChainId.KOVAN] = /*#__PURE__*/new Token(exports.ChainId.KOVAN, ZERO_ADDRESS, 18, 'ETH', 'Ethereum'), _ETHER);
-
-var Big = /*#__PURE__*/toFormat(_Big);
-var TokenAmount = /*#__PURE__*/function (_Fraction) {
-  _inheritsLoose(TokenAmount, _Fraction);
-
-  // amount _must_ be raw, i.e. in the native representation
-  function TokenAmount(token, amount) {
-    var _this;
-
-    var parsedAmount = utils.parseBigintIsh(amount);
-    utils.validateSolidityTypeInstance(parsedAmount, SolidityType.uint256);
-    _this = _Fraction.call(this, parsedAmount, JSBI.exponentiate(TEN, JSBI.BigInt(token.decimals))) || this;
-    _this.token = token;
-    return _this;
-  }
-
-  var _proto = TokenAmount.prototype;
-
-  _proto.add = function add(other) {
-    !this.token.equals(other.token) ?  invariant(false, 'TOKEN')  : void 0;
-    return new TokenAmount(this.token, JSBI.add(this.raw, other.raw));
-  };
-
-  _proto.subtract = function subtract(other) {
-    !this.token.equals(other.token) ?  invariant(false, 'TOKEN')  : void 0;
-    return new TokenAmount(this.token, JSBI.subtract(this.raw, other.raw));
-  };
-
-  _proto.toSignificant = function toSignificant(significantDigits, format, rounding) {
-    if (significantDigits === void 0) {
-      significantDigits = 6;
-    }
-
-    if (rounding === void 0) {
-      rounding = exports.Rounding.ROUND_DOWN;
-    }
-
-    return _Fraction.prototype.toSignificant.call(this, significantDigits, format, rounding);
-  };
-
-  _proto.toFixed = function toFixed(decimalPlaces, format, rounding) {
-    if (decimalPlaces === void 0) {
-      decimalPlaces = this.token.decimals;
-    }
-
-    if (rounding === void 0) {
-      rounding = exports.Rounding.ROUND_DOWN;
-    }
-
-    !(decimalPlaces <= this.token.decimals) ?  invariant(false, 'DECIMALS')  : void 0;
-    return _Fraction.prototype.toFixed.call(this, decimalPlaces, format, rounding);
-  };
-
-  _proto.toExact = function toExact(format) {
-    if (format === void 0) {
-      format = {
-        groupSeparator: ''
-      };
-    }
-
-    Big.DP = this.token.decimals;
-    return new Big(this.numerator.toString()).div(this.denominator.toString()).toFormat(format);
-  };
-
-  _createClass(TokenAmount, [{
-    key: "raw",
-    get: function get() {
-      return this.numerator;
-    }
-  }]);
-
-  return TokenAmount;
-}(entities.Fraction);
+var ETHER = /*#__PURE__*/new Token(exports.ChainId.MAINNET, ZERO_ADDRESS, 18, 'ETH', 'Ethereum');
 
 var _toSignificantRoundin, _toFixedRounding;
 var Decimal = /*#__PURE__*/toFormat(_Decimal);
-var Big$1 = /*#__PURE__*/toFormat(_Big);
+var Big = /*#__PURE__*/toFormat(_Big);
 var toSignificantRounding = (_toSignificantRoundin = {}, _toSignificantRoundin[exports.Rounding.ROUND_DOWN] = Decimal.ROUND_DOWN, _toSignificantRoundin[exports.Rounding.ROUND_HALF_UP] = Decimal.ROUND_HALF_UP, _toSignificantRoundin[exports.Rounding.ROUND_UP] = Decimal.ROUND_UP, _toSignificantRoundin);
 var toFixedRounding = (_toFixedRounding = {}, _toFixedRounding[exports.Rounding.ROUND_DOWN] = 0, _toFixedRounding[exports.Rounding.ROUND_HALF_UP] = 1, _toFixedRounding[exports.Rounding.ROUND_UP] = 3, _toFixedRounding);
 var Fraction = /*#__PURE__*/function () {
@@ -563,9 +487,9 @@ var Fraction = /*#__PURE__*/function () {
 
     !Number.isInteger(decimalPlaces) ?  invariant(false, decimalPlaces + " is not an integer.")  : void 0;
     !(decimalPlaces >= 0) ?  invariant(false, decimalPlaces + " is negative.")  : void 0;
-    Big$1.DP = decimalPlaces;
-    Big$1.RM = toFixedRounding[rounding];
-    return new Big$1(this.numerator.toString()).div(this.denominator.toString()).toFormat(decimalPlaces, format);
+    Big.DP = decimalPlaces;
+    Big.RM = toFixedRounding[rounding];
+    return new Big(this.numerator.toString()).div(this.denominator.toString()).toFormat(decimalPlaces, format);
   };
 
   _createClass(Fraction, [{
@@ -583,6 +507,79 @@ var Fraction = /*#__PURE__*/function () {
 
   return Fraction;
 }();
+
+var Big$1 = /*#__PURE__*/toFormat(_Big);
+var TokenAmount = /*#__PURE__*/function (_Fraction) {
+  _inheritsLoose(TokenAmount, _Fraction);
+
+  // amount _must_ be raw, i.e. in the native representation
+  function TokenAmount(token, amount) {
+    var _this;
+
+    var parsedAmount = parseBigintIsh(amount);
+    validateSolidityTypeInstance(parsedAmount, SolidityType.uint256);
+    _this = _Fraction.call(this, parsedAmount, JSBI.exponentiate(TEN, JSBI.BigInt(token.decimals))) || this;
+    _this.token = token;
+    return _this;
+  }
+
+  var _proto = TokenAmount.prototype;
+
+  _proto.add = function add(other) {
+    !this.token.equals(other.token) ?  invariant(false, 'TOKEN')  : void 0;
+    return new TokenAmount(this.token, JSBI.add(this.raw, other.raw));
+  };
+
+  _proto.subtract = function subtract(other) {
+    !this.token.equals(other.token) ?  invariant(false, 'TOKEN')  : void 0;
+    return new TokenAmount(this.token, JSBI.subtract(this.raw, other.raw));
+  };
+
+  _proto.toSignificant = function toSignificant(significantDigits, format, rounding) {
+    if (significantDigits === void 0) {
+      significantDigits = 6;
+    }
+
+    if (rounding === void 0) {
+      rounding = exports.Rounding.ROUND_DOWN;
+    }
+
+    return _Fraction.prototype.toSignificant.call(this, significantDigits, format, rounding);
+  };
+
+  _proto.toFixed = function toFixed(decimalPlaces, format, rounding) {
+    if (decimalPlaces === void 0) {
+      decimalPlaces = this.token.decimals;
+    }
+
+    if (rounding === void 0) {
+      rounding = exports.Rounding.ROUND_DOWN;
+    }
+
+    !(decimalPlaces <= this.token.decimals) ?  invariant(false, 'DECIMALS')  : void 0;
+    return _Fraction.prototype.toFixed.call(this, decimalPlaces, format, rounding);
+  };
+
+  _proto.toExact = function toExact(format) {
+    if (format === void 0) {
+      format = {
+        groupSeparator: ''
+      };
+    }
+
+    Big$1.DP = this.token.decimals;
+    return new Big$1(this.numerator.toString()).div(this.denominator.toString()).toFormat(format);
+  };
+
+  _createClass(TokenAmount, [{
+    key: "raw",
+    get: function get() {
+      return this.numerator;
+    }
+  }]);
+
+  return TokenAmount;
+}(Fraction);
 
 var Price = /*#__PURE__*/function (_Fraction) {
   _inheritsLoose(Price, _Fraction);
