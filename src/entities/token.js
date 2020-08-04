@@ -30,11 +30,5 @@ export class Token {
 export function currencyEquals(currencyA, currencyB) {
     return currencyA.address.toLowerCase() === currencyB.address.toLowerCase();
 }
-export const ETHER = {
-    [ChainId.MAINNET]: new Token(ChainId.MAINNET, ZERO_ADDRESS, 18, 'ETH', 'Ethereum'),
-    [ChainId.ROPSTEN]: new Token(ChainId.ROPSTEN, ZERO_ADDRESS, 18, 'ETH', 'Ethereum'),
-    [ChainId.RINKEBY]: new Token(ChainId.RINKEBY, ZERO_ADDRESS, 18, 'ETH', 'Ethereum'),
-    [ChainId.GÖRLI]: new Token(ChainId.GÖRLI, ZERO_ADDRESS, 18, 'ETH', 'Ethereum'),
-    [ChainId.KOVAN]: new Token(ChainId.KOVAN, ZERO_ADDRESS, 18, 'ETH', 'Ethereum')
-};
+export const ETHER = new Token(ChainId.MAINNET, ZERO_ADDRESS, 18, 'ETH', 'Ethereum');
 //# sourceMappingURL=token.js.map

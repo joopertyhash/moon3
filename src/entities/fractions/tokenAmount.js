@@ -1,8 +1,8 @@
 import invariant from 'tiny-invariant';
 import JSBI from 'jsbi';
 import { Rounding, SolidityType, TEN } from '../../constants';
-import { parseBigintIsh, validateSolidityTypeInstance } from 'utils';
-import { Fraction } from 'entities';
+import { parseBigintIsh, validateSolidityTypeInstance } from '../../utils';
+import { Fraction } from './fraction';
 import toFormat from 'toformat';
 import _Big from 'big.js';
 const Big = toFormat(_Big);

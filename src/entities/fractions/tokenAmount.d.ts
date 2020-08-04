@@ -1,7 +1,7 @@
 import { Token } from '../token';
 import JSBI from 'jsbi';
 import { BigintIsh, Rounding } from '../../constants';
-import { Fraction } from 'entities';
+import { Fraction } from './fraction';
 export declare class TokenAmount extends Fraction {
     readonly token: Token;
     constructor(token: Token, amount: BigintIsh);

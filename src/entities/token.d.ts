@@ -20,10 +20,4 @@ export declare class Token {
  * Compares two currencies for equality
  */
 export declare function currencyEquals(currencyA: Token, currencyB: Token): boolean;
-export declare const ETHER: {
-    1: Token;
-    3: Token;
-    4: Token;
-    5: Token;
-    42: Token;
-};
+export declare const ETHER: Token;

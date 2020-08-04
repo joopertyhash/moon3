@@ -4,4 +4,5 @@ export { ChainId, TradeType, Rounding, FACTORY_ADDRESS, MINIMUM_LIQUIDITY } from
 export * from './errors';
 export * from './entities';
 export * from './fetcher';
+export * from './utils';
 //# sourceMappingURL=index.js.map
