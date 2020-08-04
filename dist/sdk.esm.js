@@ -2320,5 +2320,5 @@ var Fetcher = /*#__PURE__*/function () {
   return Fetcher;
 }();
 
-export { ChainId, ETHER, FACTORY_ADDRESS, Fetcher, Fraction, InsufficientInputAmountError, InsufficientReservesError, MINIMUM_LIQUIDITY, Pair, Percent, Price, Rounding, Route, Token, TokenAmount, Trade, TradeType, currencyEquals, inputOutputComparator, tradeComparator };
+export { ChainId, ETHER, FACTORY_ADDRESS, Fetcher, Fraction, InsufficientInputAmountError, InsufficientReservesError, MINIMUM_LIQUIDITY, Pair, Percent, Price, Rounding, Route, Token, TokenAmount, Trade, TradeType, currencyEquals, inputOutputComparator, isETH, parseBigintIsh, sortedInsert, sqrt, tradeComparator, validateAndParseAddress, validateSolidityTypeInstance };
 //# sourceMappingURL=sdk.esm.js.map
