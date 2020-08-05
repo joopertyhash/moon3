@@ -373,6 +373,19 @@ var Token = /*#__PURE__*/function () {
     }
 
     return this.chainId === other.chainId && this.address === other.address;
+  }
+  /**
+   * Returns true if the address of this token sorts before the address of the other token
+   * @param other other token to compare
+   * @throws if the tokens have the same address
+   * @throws if the tokens are on different chains
+   */
+  ;
+
+  _proto.sortsBefore = function sortsBefore(other) {
+    !(this.chainId === other.chainId) ?  invariant(false, 'CHAIN_IDS')  : void 0;
+    !(this.address !== other.address) ?  invariant(false, 'ADDRESSES')  : void 0;
+    return this.address.toLowerCase() < other.address.toLowerCase();
   };
 
   return Token;
@@ -666,8 +679,12 @@ var Price = /*#__PURE__*/function (_Fraction) {
 var Pair = /*#__PURE__*/function () {
   // need to provide already sorted tokens
   function Pair(tokenAmountA, tokenAmountB, poolAddress) {
-    this.liquidityToken = new Token(tokenAmountA.token.chainId, poolAddress, 18, 'MOON-V1-' + tokenAmountA.token.symbol + '-' + tokenAmountB.token.symbol, 'Mooniswap V1 (' + tokenAmountA.token.symbol + '-' + tokenAmountB.token.symbol + ')');
-    this.tokenAmounts = [tokenAmountA, tokenAmountB];
+    var _ref = tokenAmountA.token.sortsBefore(tokenAmountB.token) ? [tokenAmountA, tokenAmountB] : [tokenAmountB, tokenAmountA],
+        amount0 = _ref[0],
+        amount1 = _ref[1];
+
+    this.liquidityToken = new Token(amount0.token.chainId, poolAddress, 18, 'MOON-V1-' + amount0.token.symbol + '-' + amount1.token.symbol, 'Mooniswap V1 (' + amount0.token.symbol + '-' + amount1.token.symbol + ')');
+    this.tokenAmounts = [amount0, amount1];
     this.poolAddress = poolAddress;
   }
   /**

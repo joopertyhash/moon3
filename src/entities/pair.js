@@ -9,8 +9,10 @@ import { Token } from './token';
 export class Pair {
     // need to provide already sorted tokens
     constructor(tokenAmountA, tokenAmountB, poolAddress) {
-        this.liquidityToken = new Token(tokenAmountA.token.chainId, poolAddress, 18, 'MOON-V1-' + tokenAmountA.token.symbol + '-' + tokenAmountB.token.symbol, 'Mooniswap V1 (' + tokenAmountA.token.symbol + '-' + tokenAmountB.token.symbol + ')');
-        this.tokenAmounts = [tokenAmountA, tokenAmountB];
+        const [amount0, amount1] = tokenAmountA.token.sortsBefore(tokenAmountB.token)
+            ? [tokenAmountA, tokenAmountB] : [tokenAmountB, tokenAmountA];
+        this.liquidityToken = new Token(amount0.token.chainId, poolAddress, 18, 'MOON-V1-' + amount0.token.symbol + '-' + amount1.token.symbol, 'Mooniswap V1 (' + amount0.token.symbol + '-' + amount1.token.symbol + ')');
+        this.tokenAmounts = [amount0, amount1];
         this.poolAddress = poolAddress;
     }
     /**
