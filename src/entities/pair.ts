@@ -16,14 +16,16 @@ export class Pair {
 
     // need to provide already sorted tokens
     public constructor(tokenAmountA: TokenAmount, tokenAmountB: TokenAmount, poolAddress: string) {
+        const [amount0, amount1] = tokenAmountA.token.sortsBefore(tokenAmountB.token)
+            ? [tokenAmountA, tokenAmountB] : [tokenAmountB, tokenAmountA]
         this.liquidityToken = new Token(
-            tokenAmountA.token.chainId,
+            amount0.token.chainId,
             poolAddress,
             18,
-            'MOON-V1-' + tokenAmountA.token.symbol + '-' + tokenAmountB.token.symbol,
-            'Mooniswap V1 (' + tokenAmountA.token.symbol + '-' + tokenAmountB.token.symbol + ')'
+            'MOON-V1-' + amount0.token.symbol + '-' + amount1.token.symbol,
+            'Mooniswap V1 (' + amount0.token.symbol + '-' + amount1.token.symbol + ')'
         )
-        this.tokenAmounts = [tokenAmountA, tokenAmountB]
+        this.tokenAmounts = [amount0, amount1]
         this.poolAddress = poolAddress
     }
 
