@@ -7,7 +7,8 @@ export {
   TradeType,
   Rounding,
   FACTORY_ADDRESS,
-  MINIMUM_LIQUIDITY
+  MINIMUM_LIQUIDITY,
+  ZERO_ADDRESS
 } from './constants'
 
 export * from './errors'

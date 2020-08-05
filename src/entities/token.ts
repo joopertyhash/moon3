@@ -38,7 +38,7 @@ export class Token {
  * Compares two currencies for equality
  */
 export function currencyEquals(currencyA: Token, currencyB: Token): boolean {
-    return currencyA.address.toLowerCase() === currencyB.address.toLowerCase()
+    return currencyA?.address?.toLowerCase() === currencyB?.address?.toLowerCase()
 }
 
 export const ETHER = new Token(ChainId.MAINNET, ZERO_ADDRESS, 18, 'ETH', 'Ethereum')

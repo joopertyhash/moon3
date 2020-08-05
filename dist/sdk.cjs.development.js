@@ -36,7 +36,7 @@ var _SOLIDITY_TYPE_MAXIMA;
   Rounding[Rounding["ROUND_UP"] = 2] = "ROUND_UP";
 })(exports.Rounding || (exports.Rounding = {}));
 
-var FACTORY_ADDRESS = '0x401E434FFA0095F11d3298E778d36eBa0d66D29a';
+var FACTORY_ADDRESS = '0xc12A7e093832E2d2267df225BAca60bD2B74C65F';
 var ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 var MINIMUM_LIQUIDITY = /*#__PURE__*/JSBI.BigInt(1000); // exports for internal consumption
 
@@ -382,7 +382,9 @@ var Token = /*#__PURE__*/function () {
  */
 
 function currencyEquals(currencyA, currencyB) {
-  return currencyA.address.toLowerCase() === currencyB.address.toLowerCase();
+  var _a, _b;
+
+  return ((_a = currencyA === null || currencyA === void 0 ? void 0 : currencyA.address) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === ((_b = currencyB === null || currencyB === void 0 ? void 0 : currencyB.address) === null || _b === void 0 ? void 0 : _b.toLowerCase());
 }
 var ETHER = /*#__PURE__*/new Token(exports.ChainId.MAINNET, ZERO_ADDRESS, 18, 'ETH', 'Ethereum');
 
@@ -2332,6 +2334,7 @@ exports.Route = Route;
 exports.Token = Token;
 exports.TokenAmount = TokenAmount;
 exports.Trade = Trade;
+exports.ZERO_ADDRESS = ZERO_ADDRESS;
 exports.currencyEquals = currencyEquals;
 exports.inputOutputComparator = inputOutputComparator;
 exports.isETH = isETH;
