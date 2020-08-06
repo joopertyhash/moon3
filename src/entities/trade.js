@@ -121,7 +121,7 @@ export class Trade {
      */
     minimumAmountOut(slippageTolerance) {
         invariant(!slippageTolerance.lessThan(ZERO), 'SLIPPAGE_TOLERANCE');
-        if (this.tradeType === TradeType.EXACT_OUTPUT) {
+        if (this.tradeType === TradeType.EXACT_INPUT) {
             return this.outputAmount;
         }
         else {

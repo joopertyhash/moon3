@@ -175,7 +175,7 @@ export class Trade {
    */
   public minimumAmountOut(slippageTolerance: Percent): TokenAmount {
     invariant(!slippageTolerance.lessThan(ZERO), 'SLIPPAGE_TOLERANCE')
-    if (this.tradeType === TradeType.EXACT_OUTPUT) {
+    if (this.tradeType === TradeType.EXACT_INPUT) {
       return this.outputAmount
     } else {
       const slippageAdjustedAmountOut = new Fraction(ONE)

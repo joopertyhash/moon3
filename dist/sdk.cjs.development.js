@@ -1068,7 +1068,7 @@ var Trade = /*#__PURE__*/function () {
   _proto.minimumAmountOut = function minimumAmountOut(slippageTolerance) {
     !!slippageTolerance.lessThan(ZERO) ?  invariant(false, 'SLIPPAGE_TOLERANCE')  : void 0;
 
-    if (this.tradeType === exports.TradeType.EXACT_OUTPUT) {
+    if (this.tradeType === exports.TradeType.EXACT_INPUT) {
       return this.outputAmount;
     } else {
       var slippageAdjustedAmountOut = new Fraction(ONE).add(slippageTolerance).invert().multiply(this.outputAmount.raw).quotient;
