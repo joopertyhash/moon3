@@ -1,11 +1,10 @@
-# Uniswap SDK
+# Mooniswap SDK
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-[![Actions Status](https://github.com/Uniswap/uniswap-sdk/workflows/CI/badge.svg)](https://github.com/Uniswap/uniswap-sdk)
-[![npm version](https://img.shields.io/npm/v/@uniswap/sdk/latest.svg)](https://www.npmjs.com/package/@uniswap/sdk/v/latest)
-[![npm bundle size (scoped version)](https://img.shields.io/bundlephobia/minzip/@uniswap/sdk/latest.svg)](https://bundlephobia.com/result?p=@uniswap/sdk@latest)
 
-In-depth documentation on this SDK is available at [uniswap.org](https://uniswap.org/docs/v2/SDK/getting-started/).
+## About
+Mooniswap is next generation AMM (Automated Market Maker) protocol.
+This repository contains Mooniswap SDK originally forked from Uniswap.
 
 ## Running tests
 
@@ -14,13 +13,13 @@ To run the tests, follow these steps. You must have at least node v10 and [yarn]
 First clone the repository:
 
 ```sh
-git clone https://github.com/Uniswap/uniswap-sdk.git
+git clone https://github.com/CryptoManiacsZone/mooniswap-sdk.git
 ```
 
 Move into the uniswap-sdk working directory
 
 ```sh
-cd uniswap-sdk/
+cd mooniswap-sdk/
 ```
 
 Install dependencies
@@ -29,28 +28,17 @@ Install dependencies
 yarn install
 ```
 
-Run tests
+#### License
 
-```sh
-yarn test
-```
+This program is free software: you can redistribute it and / or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-You should see output like the following:
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
 
-```sh
-yarn run v1.22.4
-$ tsdx test
- PASS  test/constants.test.ts
- PASS  test/pair.test.ts
- PASS  test/fraction.test.ts
- PASS  test/miscellaneous.test.ts
- PASS  test/entities.test.ts
- PASS  test/trade.test.ts
+See the GNU General Public License for more details.
 
-Test Suites: 1 skipped, 6 passed, 6 of 7 total
-Tests:       3 skipped, 82 passed, 85 total
-Snapshots:   0 total
-Time:        5.091s
-Ran all test suites.
-✨  Done in 6.61s.
-```
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+#### Contact us
+- info@1inch.exchange
+
+Copyright © 2020, 1inch team. Released under GNU General Public License v3.0
