@@ -14,12 +14,22 @@ export class Price extends Fraction {
     }
     static fromRoute(route) {
         const prices = [];
-        for (const [i, pair] of route.pairs.entries()) {
-            prices.push(route.path[i].equals(pair.token0)
-                ? new Price(pair.reserve0.token, pair.reserve1.token, pair.reserve0.raw, pair.reserve1.raw)
-                : new Price(pair.reserve1.token, pair.reserve0.token, pair.reserve1.raw, pair.reserve0.raw));
+        for (const [j, split] of route.route.entries()) {
+            const splitPrices = [];
+            for (const [i, pair] of split.pairs.entries()) {
+                splitPrices.push(route.path[j].path[i].equals(pair.token0)
+                    ? new Price(pair.reserve0.token, pair.reserve1.token, pair.reserve0.raw, pair.reserve1.raw)
+                    : new Price(pair.reserve1.token, pair.reserve0.token, pair.reserve1.raw, pair.reserve0.raw));
+            }
+            prices.push(splitPrices);
         }
-        return prices.slice(1).reduce((accumulator, currentValue) => accumulator.multiply(currentValue), prices[0]);
+        const midPrices = prices.map((currentValue) => {
+            return currentValue.slice(1).reduce((acc, val) => acc.multiply(val), currentValue[0]);
+        });
+        return midPrices.slice(1).reduce((accumulator, currentValue, i) => {
+            const currentPercent = route.path[i].percent;
+            return accumulator.multiplyWithPercent(currentValue, currentPercent);
+        }, midPrices[0]);
     }
     get raw() {
         return new Fraction(this.numerator, this.denominator);
@@ -34,6 +44,13 @@ export class Price extends Fraction {
         invariant(currencyEquals(this.quoteCurrency, other.baseCurrency), 'TOKEN');
         const fraction = super.multiply(other);
         return new Price(this.baseCurrency, other.quoteCurrency, fraction.denominator, fraction.numerator);
+    }
+    multiplyWithPercent(other, percent) {
+        invariant(currencyEquals(this.quoteCurrency, other.baseCurrency), 'TOKEN');
+        const fraction = super.multiply(other);
+        const denominatorFromPercent = JSBI.multiply(fraction.denominator, percent.quotient);
+        const numeratorFromPercent = JSBI.multiply(fraction.numerator, percent.quotient);
+        return new Price(this.baseCurrency, other.quoteCurrency, denominatorFromPercent, numeratorFromPercent);
     }
     // performs floor division on overflow
     quote(currencyAmount) {

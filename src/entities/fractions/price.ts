@@ -6,6 +6,7 @@ import JSBI from 'jsbi'
 import { BigintIsh, Rounding, TEN } from '../../constants'
 import { Route } from '../route'
 import { Fraction } from './fraction'
+import { Percent } from 'entities';
 
 export class Price extends Fraction {
     public readonly baseCurrency: Token // input i.e. denominator
@@ -13,15 +14,27 @@ export class Price extends Fraction {
     public readonly scalar: Fraction // used to adjust the raw fraction w/r/t the decimals of the {base,quote}Token
 
     public static fromRoute(route: Route): Price {
-        const prices: Price[] = []
-        for (const [i, pair] of route.pairs.entries()) {
-            prices.push(
-                route.path[i].equals(pair.token0)
-                    ? new Price(pair.reserve0.token, pair.reserve1.token, pair.reserve0.raw, pair.reserve1.raw)
-                    : new Price(pair.reserve1.token, pair.reserve0.token, pair.reserve1.raw, pair.reserve0.raw)
-            )
+        const prices: Price[][] = []
+        for (const [j, split] of route.route.entries()) {
+            const splitPrices = []
+            for (const [i, pair] of split.pairs.entries()) {
+                splitPrices.push(
+                    route.path[j].path[i].equals(pair.token0)
+                        ? new Price(pair.reserve0.token, pair.reserve1.token, pair.reserve0.raw, pair.reserve1.raw)
+                        : new Price(pair.reserve1.token, pair.reserve0.token, pair.reserve1.raw, pair.reserve0.raw)
+                )
+            }
+            prices.push(splitPrices)
         }
-        return prices.slice(1).reduce((accumulator, currentValue) => accumulator.multiply(currentValue), prices[0])
+
+        const midPrices = prices.map((currentValue: Price[]) => {
+            return currentValue.slice(1).reduce((acc, val) => acc.multiply(val), currentValue[0])
+        })
+
+        return midPrices.slice(1).reduce((accumulator: Price, currentValue: Price, i: number ) => {
+            const currentPercent = route.path[i].percent;
+            return accumulator.multiplyWithPercent(currentValue, currentPercent)
+        }, midPrices[0])
     }
 
     // denominator and numerator _must_ be raw, i.e. in the native representation
@@ -52,6 +65,14 @@ export class Price extends Fraction {
         invariant(currencyEquals(this.quoteCurrency, other.baseCurrency), 'TOKEN')
         const fraction = super.multiply(other)
         return new Price(this.baseCurrency, other.quoteCurrency, fraction.denominator, fraction.numerator)
+    }
+
+    public multiplyWithPercent(other: Price, percent: Percent): Price {
+        invariant(currencyEquals(this.quoteCurrency, other.baseCurrency), 'TOKEN')
+        const fraction = super.multiply(other)
+        const denominatorFromPercent = JSBI.multiply(fraction.denominator, percent.quotient)
+        const numeratorFromPercent = JSBI.multiply(fraction.numerator, percent.quotient)
+        return new Price(this.baseCurrency, other.quoteCurrency, denominatorFromPercent, numeratorFromPercent)
     }
 
     // performs floor division on overflow

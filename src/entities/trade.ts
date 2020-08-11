@@ -133,27 +133,38 @@ export class Trade {
   }
 
   public constructor(route: Route, amount: TokenAmount, tradeType: TradeType) {
-    const amounts: TokenAmount[] = new Array(route.path.length)
-    const nextPairs: Pair[] = new Array(route.pairs.length)
+    const amounts: TokenAmount[] = new Array(route.route.length)
+
     if (tradeType === TradeType.EXACT_INPUT) {
+
       invariant(currencyEquals(amount.token, route.input), 'INPUT')
       amounts[0] = amount
-      for (let i = 0; i < route.path.length - 1; i++) {
-        const pair = route.pairs[i]
-        const [outputAmount, nextPair] = pair.getOutputAmount(amounts[i])
-        amounts[i + 1] = outputAmount
-        nextPairs[i] = nextPair
+      for (let j = 0; j < route.route.length - 1; j++) {
+
+        const pairs = route.route[j].pairs;
+        for (let i = 0; i < pairs.length; i++) {
+          const [outputAmount] = pairs[i].getOutputAmount(amounts[i])
+          amounts[i + 1] = outputAmount
+        }
       }
     } else {
-      invariant(currencyEquals(amount.token, route.output), 'OUTPUT')
-      amounts[amounts.length - 1] = amount
-      for (let i = route.path.length - 1; i > 0; i--) {
-        const pair = route.pairs[i - 1]
-        const [inputAmount, nextPair] = pair.getInputAmount(amounts[i])
-        amounts[i - 1] = inputAmount
-        nextPairs[i - 1] = nextPair
+      throw new Error('EXACT_OUTPIT currently does not support')
+      // invariant(currencyEquals(amount.token, route.output), 'OUTPUT')
+      // for (let i = route.route.length - 1; i > 0; i--) {
+      //
+      //   const pairs = route.route[i].pairs;
+      //   const currentNextPairs: Pair[] = new Array(pairs.length)
+      //   const currentAmounts: TokenAmount[] = new Array(pairs.length)
+      //   amounts[currentAmounts.length - 1] = pairs[pairs.length - 1]
+      //
+      //   for (let j = pairs.length - 1; j > 0 ; j--) {
+      //     const pair = pairs[j - 1]
+      //     const [inputAmount, nextPair] = pair.getInputAmount(amounts[j])
+      //     currentAmounts[j - 1] = inputAmount
+      //     currentNextPairs[j - 1] = nextPair
+      //   }
+
       }
-    }
 
     this.route = route
     this.tradeType = tradeType
