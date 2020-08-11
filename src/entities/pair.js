@@ -2,7 +2,7 @@ import { Price } from './fractions/price';
 import { TokenAmount } from './fractions/tokenAmount';
 import invariant from 'tiny-invariant';
 import JSBI from 'jsbi';
-import { _1000, _997, FIVE, MINIMUM_LIQUIDITY, ONE, ZERO } from '../constants';
+import { _1000, _997, FIVE, ONE, ZERO } from '../constants';
 import { parseBigintIsh, sqrt } from '../utils';
 import { InsufficientInputAmountError, InsufficientReservesError } from '../errors';
 import { Token } from './token';
@@ -102,7 +102,9 @@ export class Pair {
         invariant(tokenAmounts[0].token.equals(this.token0) && tokenAmounts[1].token.equals(this.token1), 'TOKEN');
         let liquidity;
         if (JSBI.equal(totalSupply.raw, ZERO)) {
-            liquidity = JSBI.subtract(sqrt(JSBI.multiply(tokenAmounts[0].raw, tokenAmounts[1].raw)), MINIMUM_LIQUIDITY);
+            liquidity = JSBI.greaterThan(tokenAmounts[0].raw, tokenAmounts[1].raw)
+                ? JSBI.BigInt(tokenAmounts[0].raw)
+                : JSBI.BigInt(tokenAmounts[1].raw);
         }
         else {
             const amount0 = JSBI.divide(JSBI.multiply(tokenAmounts[0].raw, totalSupply.raw), this.reserve0.raw);

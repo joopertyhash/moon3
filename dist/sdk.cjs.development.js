@@ -766,7 +766,7 @@ var Pair = /*#__PURE__*/function () {
     var liquidity;
 
     if (JSBI.equal(totalSupply.raw, ZERO)) {
-      liquidity = JSBI.subtract(sqrt(JSBI.multiply(tokenAmounts[0].raw, tokenAmounts[1].raw)), MINIMUM_LIQUIDITY);
+      liquidity = JSBI.greaterThan(tokenAmounts[0].raw, tokenAmounts[1].raw) ? JSBI.BigInt(tokenAmounts[0].raw) : JSBI.BigInt(tokenAmounts[1].raw);
     } else {
       var amount0 = JSBI.divide(JSBI.multiply(tokenAmounts[0].raw, totalSupply.raw), this.reserve0.raw);
       var amount1 = JSBI.divide(JSBI.multiply(tokenAmounts[1].raw, totalSupply.raw), this.reserve1.raw);
