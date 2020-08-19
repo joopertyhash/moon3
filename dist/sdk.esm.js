@@ -1036,48 +1036,26 @@ function tradeComparator(a, b) {
  */
 
 var Trade = /*#__PURE__*/function () {
-  function Trade(route, amount, tradeType) {
-    var amounts = new Array(route.route.length);
+  function Trade(route, inputAmount, tradeType, outputAmount) {
+    /*
+      !WARNING!
+      !temporary very bad code!
+    */
+    if (!outputAmount) {
+      var lastPath = route.path[route.path.length - 1];
+      outputAmount = new TokenAmount(lastPath.path[lastPath.path.length - 1], '0');
+    } // const amounts: TokenAmount[][] = new Array(route.route.length)
+
+
     var nextPairs = new Array(route.route.length);
 
-    if (tradeType === TradeType.EXACT_INPUT) {
-      !currencyEquals(amount.token, route.input) ? process.env.NODE_ENV !== "production" ? invariant(false, 'INPUT') : invariant(false) : void 0;
-
-      for (var j = 0; j < route.route.length - 1; j++) {
-        var pairs = route.route[j].pairs;
-        amounts[j] = new Array(route.route[j].pairs.length);
-        nextPairs[j] = route.route[j];
-        amounts[j][0] = amount;
-
-        for (var i = 0; i < pairs.length; i++) {
-          var _pairs$i$getOutputAmo = pairs[i].getOutputAmount(amounts[j][i]),
-              outputAmount = _pairs$i$getOutputAmo[0];
-
-          amounts[j][i + 1] = outputAmount;
-        }
-      }
-    } else {
-      throw new Error('EXACT_OUTPUT currently does not support'); // invariant(currencyEquals(amount.token, route.output), 'OUTPUT')
-      // for (let i = route.route.length - 1; i > 0; i--) {
-      //
-      //   const pairs = route.route[i].pairs;
-      //   const currentNextPairs: Pair[] = new Array(pairs.length)
-      //   const currentAmounts: TokenAmount[] = new Array(pairs.length)
-      //   amounts[currentAmounts.length - 1] = pairs[pairs.length - 1]
-      //
-      //   for (let j = pairs.length - 1; j > 0 ; j--) {
-      //     const pair = pairs[j - 1]
-      //     const [inputAmount, nextPair] = pair.getInputAmount(amounts[j])
-      //     currentAmounts[j - 1] = inputAmount
-      //     currentNextPairs[j - 1] = nextPair
-      //   }
-    }
-
     this.route = route;
-    this.tradeType = tradeType;
-    this.inputAmount = tradeType === TradeType.EXACT_INPUT ? amount : amounts[0][0]; // this.outputAmount = tradeType === TradeType.EXACT_OUTPUT ? amount : amounts[amounts.length - 1][amounts[amounts.length - 1].length - 1]
+    this.tradeType = tradeType; // this.inputAmount = tradeType === TradeType.EXACT_INPUT ? amount : amounts[0][0]
 
-    this.outputAmount = amounts[amounts.length - 1][amounts[amounts.length - 1].length - 1];
+    this.inputAmount = inputAmount; // this.outputAmount = tradeType === TradeType.EXACT_OUTPUT ? amount : amounts[amounts.length - 1][amounts[amounts.length - 1].length - 1]
+    // this.outputAmount = amounts[amounts.length - 1][amounts[amounts.length - 1].length - 1]
+
+    this.outputAmount = outputAmount;
     this.executionPrice = new Price(this.inputAmount.token, this.outputAmount.token, this.inputAmount.raw, this.outputAmount.raw);
     this.nextMidPrice = Price.fromRoute(new Route(nextPairs, route.input));
     this.priceImpact = computePriceImpact(route.midPrice, this.inputAmount, this.outputAmount);
