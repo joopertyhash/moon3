@@ -130,27 +130,35 @@ export class Trade {
     return new Trade(route, amountOut, TradeType.EXACT_OUTPUT)
   }
 
-  public constructor(route: Route, amount: TokenAmount, tradeType: TradeType) {
-    const amounts: TokenAmount[][] = new Array(route.route.length)
+  public constructor(route: Route, inputAmount: TokenAmount, tradeType: TradeType, outputAmount?: TokenAmount) {
+    /*
+      !WARNING!
+      !temporary very bad code!
+    */
+    if (!outputAmount) {
+      const lastPath = route.path[route.path.length - 1];
+      outputAmount = new TokenAmount(lastPath.path[lastPath.path.length - 1] , '0')
+    }
+    // const amounts: TokenAmount[][] = new Array(route.route.length)
     const nextPairs: RoutePath = new Array(route.route.length)
 
     if (tradeType === TradeType.EXACT_INPUT) {
 
-      invariant(currencyEquals(amount.token, route.input), 'INPUT')
-      for (let j = 0; j < route.route.length - 1; j++) {
-
-        const pairs = route.route[j].pairs;
-        amounts[j] = new Array(route.route[j].pairs.length);
-        nextPairs[j] = route.route[j];
-
-        amounts[j][0] = amount
-        for (let i = 0; i < pairs.length; i++) {
-          const [outputAmount] = pairs[i].getOutputAmount(amounts[j][i])
-          amounts[j][i + 1] = outputAmount
-        }
-      }
+      // invariant(currencyEquals(amount.token, route.input), 'INPUT')
+      // for (let j = 0; j < route.route.length - 1; j++) {
+      //
+      //   const pairs = route.route[j].pairs;
+      //   amounts[j] = new Array(route.route[j].pairs.length);
+      //   nextPairs[j] = route.route[j];
+      //
+      //   amounts[j][0] = amount
+      //   for (let i = 0; i < pairs.length; i++) {
+      //     const [outputAmount] = pairs[i].getOutputAmount(amounts[j][i])
+      //     amounts[j][i + 1] = outputAmount
+      //   }
+      // }
     } else {
-      throw new Error('EXACT_OUTPUT currently does not support')
+      // throw new Error('EXACT_OUTPUT currently does not support')
       // invariant(currencyEquals(amount.token, route.output), 'OUTPUT')
       // for (let i = route.route.length - 1; i > 0; i--) {
       //
@@ -170,9 +178,11 @@ export class Trade {
 
     this.route = route
     this.tradeType = tradeType
-    this.inputAmount = tradeType === TradeType.EXACT_INPUT ? amount : amounts[0][0]
+    // this.inputAmount = tradeType === TradeType.EXACT_INPUT ? amount : amounts[0][0]
+    this.inputAmount = inputAmount
     // this.outputAmount = tradeType === TradeType.EXACT_OUTPUT ? amount : amounts[amounts.length - 1][amounts[amounts.length - 1].length - 1]
-    this.outputAmount = amounts[amounts.length - 1][amounts[amounts.length - 1].length - 1]
+    // this.outputAmount = amounts[amounts.length - 1][amounts[amounts.length - 1].length - 1]
+    this.outputAmount = outputAmount
     this.executionPrice = new Price(
       this.inputAmount.token,
       this.outputAmount.token,
