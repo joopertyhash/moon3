@@ -140,7 +140,7 @@ export class Trade {
       outputAmount = new TokenAmount(lastPath.path[lastPath.path.length - 1] , '0')
     }
     // const amounts: TokenAmount[][] = new Array(route.route.length)
-    const nextPairs: RoutePath = new Array(route.route.length)
+    // const nextPairs: RoutePath = new Array(route.route.length)
 
     if (tradeType === TradeType.EXACT_INPUT) {
 
@@ -189,8 +189,10 @@ export class Trade {
       this.inputAmount.raw,
       this.outputAmount.raw
     )
-    this.nextMidPrice = Price.fromRoute(new Route(nextPairs, route.input))
+    // this.nextMidPrice = Price.fromRoute(new Route(nextPairs, route.input))
+    this.nextMidPrice = this.executionPrice
     this.priceImpact = computePriceImpact(route.midPrice, this.inputAmount, this.outputAmount)
+    // this.priceImpact = computePriceImpact(route.midPrice, this.inputAmount, this.outputAmount)
   }
 
   /**
