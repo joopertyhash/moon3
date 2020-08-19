@@ -1046,9 +1046,6 @@ var Trade = /*#__PURE__*/function () {
       outputAmount = new TokenAmount(lastPath.path[lastPath.path.length - 1], '0');
     } // const amounts: TokenAmount[][] = new Array(route.route.length)
 
-
-    var nextPairs = new Array(route.route.length);
-
     this.route = route;
     this.tradeType = tradeType; // this.inputAmount = tradeType === TradeType.EXACT_INPUT ? amount : amounts[0][0]
 
@@ -1056,9 +1053,10 @@ var Trade = /*#__PURE__*/function () {
     // this.outputAmount = amounts[amounts.length - 1][amounts[amounts.length - 1].length - 1]
 
     this.outputAmount = outputAmount;
-    this.executionPrice = new Price(this.inputAmount.token, this.outputAmount.token, this.inputAmount.raw, this.outputAmount.raw);
-    this.nextMidPrice = Price.fromRoute(new Route(nextPairs, route.input));
-    this.priceImpact = computePriceImpact(route.midPrice, this.inputAmount, this.outputAmount);
+    this.executionPrice = new Price(this.inputAmount.token, this.outputAmount.token, this.inputAmount.raw, this.outputAmount.raw); // this.nextMidPrice = Price.fromRoute(new Route(nextPairs, route.input))
+
+    this.nextMidPrice = this.executionPrice;
+    this.priceImpact = computePriceImpact(route.midPrice, this.inputAmount, this.outputAmount); // this.priceImpact = computePriceImpact(route.midPrice, this.inputAmount, this.outputAmount)
   }
   /**
    * Constructs an exact in trade with the given amount in and route

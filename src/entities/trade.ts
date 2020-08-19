@@ -5,7 +5,7 @@ import { Fraction } from './fractions/fraction'
 import { Percent } from './fractions/percent'
 import { Price } from './fractions/price'
 import { TokenAmount } from './fractions/tokenAmount'
-import { Route, RoutePath } from './route'
+import { Route } from './route'
 import { currencyEquals } from './token'
 
 /**
