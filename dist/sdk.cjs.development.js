@@ -613,16 +613,31 @@ var Price = /*#__PURE__*/function (_Fraction) {
   Price.fromRoute = function fromRoute(route) {
     var prices = [];
 
-    for (var _iterator = _createForOfIteratorHelperLoose(route.pairs.entries()), _step; !(_step = _iterator()).done;) {
+    for (var _iterator = _createForOfIteratorHelperLoose(route.route.entries()), _step; !(_step = _iterator()).done;) {
       var _step$value = _step.value,
-          i = _step$value[0],
-          pair = _step$value[1];
-      prices.push(route.path[i].equals(pair.token0) ? new Price(pair.reserve0.token, pair.reserve1.token, pair.reserve0.raw, pair.reserve1.raw) : new Price(pair.reserve1.token, pair.reserve0.token, pair.reserve1.raw, pair.reserve0.raw));
+          j = _step$value[0],
+          split = _step$value[1];
+      var splitPrices = [];
+
+      for (var _iterator2 = _createForOfIteratorHelperLoose(split.pairs.entries()), _step2; !(_step2 = _iterator2()).done;) {
+        var _step2$value = _step2.value,
+            i = _step2$value[0],
+            pair = _step2$value[1];
+        splitPrices.push(route.path[j].path[i].equals(pair.token0) ? new Price(pair.reserve0.token, pair.reserve1.token, pair.reserve0.raw, pair.reserve1.raw) : new Price(pair.reserve1.token, pair.reserve0.token, pair.reserve1.raw, pair.reserve0.raw));
+      }
+
+      prices.push(splitPrices);
     }
 
-    return prices.slice(1).reduce(function (accumulator, currentValue) {
-      return accumulator.multiply(currentValue);
-    }, prices[0]);
+    var midPrices = prices.map(function (currentValue) {
+      return currentValue.slice(1).reduce(function (acc, val) {
+        return acc.multiply(val);
+      }, currentValue[0]);
+    });
+    return midPrices.slice(1).reduce(function (accumulator, currentValue, i) {
+      var currentPercent = route.path[i].percent;
+      return accumulator.multiplyWithPercent(currentValue, currentPercent);
+    }, midPrices[0]);
   };
 
   var _proto = Price.prototype;
@@ -637,6 +652,16 @@ var Price = /*#__PURE__*/function (_Fraction) {
     var fraction = _Fraction.prototype.multiply.call(this, other);
 
     return new Price(this.baseCurrency, other.quoteCurrency, fraction.denominator, fraction.numerator);
+  };
+
+  _proto.multiplyWithPercent = function multiplyWithPercent(other, percent) {
+    !currencyEquals(this.quoteCurrency, other.baseCurrency) ?  invariant(false, 'TOKEN')  : void 0;
+
+    var fraction = _Fraction.prototype.multiply.call(this, other);
+
+    var denominatorFromPercent = JSBI.multiply(fraction.denominator, percent.quotient);
+    var numeratorFromPercent = JSBI.multiply(fraction.numerator, percent.quotient);
+    return new Price(this.baseCurrency, other.quoteCurrency, denominatorFromPercent, numeratorFromPercent);
   } // performs floor division on overflow
   ;
 
@@ -862,38 +887,54 @@ var Pair = /*#__PURE__*/function () {
 }();
 
 var Route = /*#__PURE__*/function () {
-  function Route(pairs, input, output) {
-    !(pairs.length > 0) ?  invariant(false, 'PAIRS')  : void 0;
-    !pairs.every(function (pair) {
-      return pair.chainId === pairs[0].chainId;
+  function Route(route, input, output) {
+    !(route.length > 0) ?  invariant(false, 'PAIRS')  : void 0;
+    var chainId = route[0].pairs[0].chainId;
+    !route.every(function (split) {
+      return split.pairs.every(function (pair) {
+        return chainId === pair.chainId;
+      });
     }) ?  invariant(false, 'CHAIN_IDS')  : void 0;
-    !(input instanceof Token && pairs[0].involvesToken(input)) ?  invariant(false, 'INPUT')  : void 0;
-    !(typeof output === 'undefined' || output instanceof Token && pairs[pairs.length - 1].involvesToken(output)) ?  invariant(false, 'OUTPUT')  : void 0;
-    var path = [input];
+    !route[0].pairs.every(function (pair) {
+      return pair.involvesToken(input);
+    }) ?  invariant(false, 'INPUT')  : void 0;
+    !(typeof output === 'undefined' || route[route.length - 1].pairs.every(function (pair) {
+      return pair.involvesToken(output);
+    })) ?  invariant(false, 'OUTPUT')  : void 0;
+    var path = [];
 
-    for (var _iterator = _createForOfIteratorHelperLoose(pairs.entries()), _step; !(_step = _iterator()).done;) {
-      var _step$value = _step.value,
-          i = _step$value[0],
-          pair = _step$value[1];
-      var currentInput = path[i];
-      !(currentInput.equals(pair.token0) || currentInput.equals(pair.token1)) ?  invariant(false, 'PATH')  : void 0;
+    for (var _iterator = _createForOfIteratorHelperLoose(route), _step; !(_step = _iterator()).done;) {
+      var split = _step.value;
+      var splitPath = {
+        path: [input],
+        percent: split.percent
+      };
 
-      var _output = currentInput.equals(pair.token0) ? pair.token1 : pair.token0;
+      for (var _iterator2 = _createForOfIteratorHelperLoose(split.pairs.entries()), _step2; !(_step2 = _iterator2()).done;) {
+        var _step2$value = _step2.value,
+            i = _step2$value[0],
+            pair = _step2$value[1];
+        var currentInput = splitPath.path[i];
 
-      path.push(_output);
+        var _output = currentInput.equals(pair.token0) ? pair.token1 : pair.token0;
+
+        splitPath.path.push(_output);
+      }
+
+      path.push(splitPath);
     }
 
-    this.pairs = pairs;
+    this.route = route;
     this.path = path;
     this.midPrice = Price.fromRoute(this);
     this.input = input;
-    this.output = output !== null && output !== void 0 ? output : path[path.length - 1];
+    this.output = output !== null && output !== void 0 ? output : path[path.length - 1].path[0];
   }
 
   _createClass(Route, [{
     key: "chainId",
     get: function get() {
-      return this.pairs[0].chainId;
+      return this.route[0].pairs[0].chainId;
     }
   }]);
 
@@ -996,43 +1037,47 @@ function tradeComparator(a, b) {
 
 var Trade = /*#__PURE__*/function () {
   function Trade(route, amount, tradeType) {
-    var amounts = new Array(route.path.length);
-    var nextPairs = new Array(route.pairs.length);
+    var amounts = new Array(route.route.length);
+    var nextPairs = new Array(route.route.length);
 
     if (tradeType === exports.TradeType.EXACT_INPUT) {
       !currencyEquals(amount.token, route.input) ?  invariant(false, 'INPUT')  : void 0;
-      amounts[0] = amount;
 
-      for (var i = 0; i < route.path.length - 1; i++) {
-        var pair = route.pairs[i];
+      for (var j = 0; j < route.route.length - 1; j++) {
+        var pairs = route.route[j].pairs;
+        amounts[j] = new Array(route.route[j].pairs.length);
+        nextPairs[j] = route.route[j];
+        amounts[j][0] = amount;
 
-        var _pair$getOutputAmount = pair.getOutputAmount(amounts[i]),
-            outputAmount = _pair$getOutputAmount[0],
-            nextPair = _pair$getOutputAmount[1];
+        for (var i = 0; i < pairs.length; i++) {
+          var _pairs$i$getOutputAmo = pairs[i].getOutputAmount(amounts[j][i]),
+              outputAmount = _pairs$i$getOutputAmo[0];
 
-        amounts[i + 1] = outputAmount;
-        nextPairs[i] = nextPair;
+          amounts[j][i + 1] = outputAmount;
+        }
       }
     } else {
-      !currencyEquals(amount.token, route.output) ?  invariant(false, 'OUTPUT')  : void 0;
-      amounts[amounts.length - 1] = amount;
-
-      for (var _i = route.path.length - 1; _i > 0; _i--) {
-        var _pair = route.pairs[_i - 1];
-
-        var _pair$getInputAmount = _pair.getInputAmount(amounts[_i]),
-            inputAmount = _pair$getInputAmount[0],
-            _nextPair = _pair$getInputAmount[1];
-
-        amounts[_i - 1] = inputAmount;
-        nextPairs[_i - 1] = _nextPair;
-      }
+      throw new Error('EXACT_OUTPUT currently does not support'); // invariant(currencyEquals(amount.token, route.output), 'OUTPUT')
+      // for (let i = route.route.length - 1; i > 0; i--) {
+      //
+      //   const pairs = route.route[i].pairs;
+      //   const currentNextPairs: Pair[] = new Array(pairs.length)
+      //   const currentAmounts: TokenAmount[] = new Array(pairs.length)
+      //   amounts[currentAmounts.length - 1] = pairs[pairs.length - 1]
+      //
+      //   for (let j = pairs.length - 1; j > 0 ; j--) {
+      //     const pair = pairs[j - 1]
+      //     const [inputAmount, nextPair] = pair.getInputAmount(amounts[j])
+      //     currentAmounts[j - 1] = inputAmount
+      //     currentNextPairs[j - 1] = nextPair
+      //   }
     }
 
     this.route = route;
     this.tradeType = tradeType;
-    this.inputAmount = tradeType === exports.TradeType.EXACT_INPUT ? amount : amounts[0];
-    this.outputAmount = tradeType === exports.TradeType.EXACT_OUTPUT ? amount : amounts[amounts.length - 1];
+    this.inputAmount = tradeType === exports.TradeType.EXACT_INPUT ? amount : amounts[0][0]; // this.outputAmount = tradeType === TradeType.EXACT_OUTPUT ? amount : amounts[amounts.length - 1][amounts[amounts.length - 1].length - 1]
+
+    this.outputAmount = amounts[amounts.length - 1][amounts[amounts.length - 1].length - 1];
     this.executionPrice = new Price(this.inputAmount.token, this.outputAmount.token, this.inputAmount.raw, this.outputAmount.raw);
     this.nextMidPrice = Price.fromRoute(new Route(nextPairs, route.input));
     this.priceImpact = computePriceImpact(route.midPrice, this.inputAmount, this.outputAmount);
@@ -1090,169 +1135,6 @@ var Trade = /*#__PURE__*/function () {
       var slippageAdjustedAmountIn = new Fraction(ONE).add(slippageTolerance).multiply(this.inputAmount.raw).quotient;
       return new TokenAmount(this.inputAmount.token, slippageAdjustedAmountIn);
     }
-  }
-  /**
-   * Given a list of pairs, and a fixed amount in, returns the top `maxNumResults` trades that go from an input token
-   * amount to an output token, making at most `maxHops` hops.
-   * Note this does not consider aggregation, as routes are linear. It's possible a better route exists by splitting
-   * the amount in among multiple routes.
-   * @param pairs the pairs to consider in finding the best trade
-   * @param TokenAmountIn exact amount of input currency to spend
-   * @param currencyOut the desired currency out
-   * @param maxNumResults maximum number of results to return
-   * @param maxHops maximum number of hops a returned trade can make, e.g. 1 hop goes through a single pair
-   * @param currentPairs used in recursion; the current list of pairs
-   * @param originalAmountIn used in recursion; the original value of the TokenAmountIn parameter
-   * @param bestTrades used in recursion; the current list of best trades
-   */
-  ;
-
-  Trade.bestTradeExactIn = function bestTradeExactIn(pairs, TokenAmountIn, currencyOut, _temp, // used in recursion.
-  currentPairs, originalAmountIn, bestTrades) {
-    var _ref = _temp === void 0 ? {} : _temp,
-        _ref$maxNumResults = _ref.maxNumResults,
-        maxNumResults = _ref$maxNumResults === void 0 ? 3 : _ref$maxNumResults,
-        _ref$maxHops = _ref.maxHops,
-        maxHops = _ref$maxHops === void 0 ? 3 : _ref$maxHops;
-
-    if (currentPairs === void 0) {
-      currentPairs = [];
-    }
-
-    if (originalAmountIn === void 0) {
-      originalAmountIn = TokenAmountIn;
-    }
-
-    if (bestTrades === void 0) {
-      bestTrades = [];
-    }
-
-    !(pairs.length > 0) ?  invariant(false, 'PAIRS')  : void 0;
-    !(maxHops > 0) ?  invariant(false, 'MAX_HOPS')  : void 0;
-    !(originalAmountIn === TokenAmountIn || currentPairs.length > 0) ?  invariant(false, 'INVALID_RECURSION')  : void 0;
-    var chainId = TokenAmountIn.token.chainId;
-    !(chainId !== undefined) ?  invariant(false, 'CHAIN_ID')  : void 0;
-    var amountIn = TokenAmountIn;
-    var tokenOut = currencyOut;
-
-    for (var i = 0; i < pairs.length; i++) {
-      var pair = pairs[i]; // pair irrelevant
-
-      if (!pair.token0.equals(amountIn.token) && !pair.token1.equals(amountIn.token)) continue;
-      if (pair.reserve0.equalTo(ZERO) || pair.reserve1.equalTo(ZERO)) continue;
-      var amountOut = void 0;
-
-      try {
-        ;
-
-        var _pair$getOutputAmount2 = pair.getOutputAmount(amountIn);
-
-        amountOut = _pair$getOutputAmount2[0];
-      } catch (error) {
-        // input too low
-        if (error.isInsufficientInputAmountError) {
-          continue;
-        }
-
-        throw error;
-      } // we have arrived at the output token, so this is the final trade of one of the paths
-
-
-      if (amountOut.token.equals(tokenOut)) {
-        sortedInsert(bestTrades, new Trade(new Route([].concat(currentPairs, [pair]), originalAmountIn.token, currencyOut), originalAmountIn, exports.TradeType.EXACT_INPUT), maxNumResults, tradeComparator);
-      } else if (maxHops > 1 && pairs.length > 1) {
-        var pairsExcludingThisPair = pairs.slice(0, i).concat(pairs.slice(i + 1, pairs.length)); // otherwise, consider all the other paths that lead from this token as long as we have not exceeded maxHops
-
-        Trade.bestTradeExactIn(pairsExcludingThisPair, amountOut, currencyOut, {
-          maxNumResults: maxNumResults,
-          maxHops: maxHops - 1
-        }, [].concat(currentPairs, [pair]), originalAmountIn, bestTrades);
-      }
-    }
-
-    return bestTrades;
-  }
-  /**
-   * similar to the above method but instead targets a fixed output amount
-   * given a list of pairs, and a fixed amount out, returns the top `maxNumResults` trades that go from an input token
-   * to an output token amount, making at most `maxHops` hops
-   * note this does not consider aggregation, as routes are linear. it's possible a better route exists by splitting
-   * the amount in among multiple routes.
-   * @param pairs the pairs to consider in finding the best trade
-   * @param currencyIn the currency to spend
-   * @param TokenAmountOut the exact amount of currency out
-   * @param maxNumResults maximum number of results to return
-   * @param maxHops maximum number of hops a returned trade can make, e.g. 1 hop goes through a single pair
-   * @param currentPairs used in recursion; the current list of pairs
-   * @param originalAmountOut used in recursion; the original value of the TokenAmountOut parameter
-   * @param bestTrades used in recursion; the current list of best trades
-   */
-  ;
-
-  Trade.bestTradeExactOut = function bestTradeExactOut(pairs, currencyIn, TokenAmountOut, _temp2, // used in recursion.
-  currentPairs, originalAmountOut, bestTrades) {
-    var _ref2 = _temp2 === void 0 ? {} : _temp2,
-        _ref2$maxNumResults = _ref2.maxNumResults,
-        maxNumResults = _ref2$maxNumResults === void 0 ? 3 : _ref2$maxNumResults,
-        _ref2$maxHops = _ref2.maxHops,
-        maxHops = _ref2$maxHops === void 0 ? 3 : _ref2$maxHops;
-
-    if (currentPairs === void 0) {
-      currentPairs = [];
-    }
-
-    if (originalAmountOut === void 0) {
-      originalAmountOut = TokenAmountOut;
-    }
-
-    if (bestTrades === void 0) {
-      bestTrades = [];
-    }
-
-    !(pairs.length > 0) ?  invariant(false, 'PAIRS')  : void 0;
-    !(maxHops > 0) ?  invariant(false, 'MAX_HOPS')  : void 0;
-    !(originalAmountOut === TokenAmountOut || currentPairs.length > 0) ?  invariant(false, 'INVALID_RECURSION')  : void 0;
-    var chainId = TokenAmountOut instanceof TokenAmount ? TokenAmountOut.token.chainId : currencyIn instanceof Token ? currencyIn.chainId : undefined;
-    !(chainId !== undefined) ?  invariant(false, 'CHAIN_ID')  : void 0;
-    var amountOut = TokenAmountOut;
-    var tokenIn = currencyIn;
-
-    for (var i = 0; i < pairs.length; i++) {
-      var pair = pairs[i]; // pair irrelevant
-
-      if (!pair.token0.equals(amountOut.token) && !pair.token1.equals(amountOut.token)) continue;
-      if (pair.reserve0.equalTo(ZERO) || pair.reserve1.equalTo(ZERO)) continue;
-      var amountIn = void 0;
-
-      try {
-        ;
-
-        var _pair$getInputAmount2 = pair.getInputAmount(amountOut);
-
-        amountIn = _pair$getInputAmount2[0];
-      } catch (error) {
-        // not enough liquidity in this pair
-        if (error.isInsufficientReservesError) {
-          continue;
-        }
-
-        throw error;
-      } // we have arrived at the input token, so this is the first trade of one of the paths
-
-
-      if (amountIn.token.equals(tokenIn)) {
-        sortedInsert(bestTrades, new Trade(new Route([pair].concat(currentPairs), currencyIn, originalAmountOut.token), originalAmountOut, exports.TradeType.EXACT_OUTPUT), maxNumResults, tradeComparator);
-      } else if (maxHops > 1 && pairs.length > 1) {
-        var pairsExcludingThisPair = pairs.slice(0, i).concat(pairs.slice(i + 1, pairs.length)); // otherwise, consider all the other paths that arrive at this token as long as we have not exceeded maxHops
-
-        Trade.bestTradeExactOut(pairsExcludingThisPair, currencyIn, amountIn, {
-          maxNumResults: maxNumResults,
-          maxHops: maxHops - 1
-        }, [pair].concat(currentPairs), originalAmountOut, bestTrades);
-      }
-    }
-
-    return bestTrades;
   };
 
   return Trade;

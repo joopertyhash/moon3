@@ -3,6 +3,7 @@ import { TokenAmount } from './tokenAmount';
 import { BigintIsh, Rounding } from '../../constants';
 import { Route } from '../route';
 import { Fraction } from './fraction';
+import { Percent } from 'entities';
 export declare class Price extends Fraction {
     readonly baseCurrency: Token;
     readonly quoteCurrency: Token;
@@ -13,6 +14,7 @@ export declare class Price extends Fraction {
     get adjusted(): Fraction;
     invert(): Price;
     multiply(other: Price): Price;
+    multiplyWithPercent(other: Price, percent: Percent): Price;
     quote(currencyAmount: TokenAmount): TokenAmount;
     toSignificant(significantDigits?: number, format?: object, rounding?: Rounding): string;
     toFixed(decimalPlaces?: number, format?: object, rounding?: Rounding): string;
