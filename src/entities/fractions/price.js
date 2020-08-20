@@ -23,13 +23,19 @@ export class Price extends Fraction {
             }
             prices.push(splitPrices);
         }
-        const midPrices = prices.map((currentValue) => {
-            return currentValue.slice(1).reduce((acc, val) => acc.multiply(val), currentValue[0]);
-        });
-        return midPrices.slice(1).reduce((accumulator, currentValue, i) => {
-            const currentPercent = route.path[i].percent;
-            return accumulator.multiplyWithPercent(currentValue, currentPercent);
-        }, midPrices[0]);
+        /*
+         very very very bad, I want to cry
+         but we need it fast to allow users get better price as soon as possible
+        */
+        return prices[0][0];
+        // const midPrices = prices.map((currentValue: Price[]) => {
+        //     return currentValue.slice(1).reduce((acc, val) => acc.multiply(val), currentValue[0])
+        // })
+        //
+        // return midPrices.slice(1).reduce((accumulator: Price, currentValue: Price, i: number ) => {
+        //     const currentPercent = route.path[i].percent;
+        //     return accumulator.multiplyWithPercent(currentValue, currentPercent)
+        // }, midPrices[0])
     }
     get raw() {
         return new Fraction(this.numerator, this.denominator);
