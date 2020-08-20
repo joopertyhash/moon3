@@ -5,9 +5,15 @@ export class Route {
         invariant(route.length > 0, 'PAIRS');
         const chainId = route[0].pairs[0].chainId;
         invariant(route.every(split => split.pairs.every(pair => chainId === pair.chainId)), 'CHAIN_IDS');
-        invariant((route[0].pairs.every(pair => pair.involvesToken(input))), 'INPUT');
-        invariant(typeof output === 'undefined' ||
-            (route[route.length - 1].pairs.every(pair => pair.involvesToken(output))), 'OUTPUT');
+        // invariant(
+        //   (route[0].pairs.every(pair => pair.involvesToken(input))),
+        //   'INPUT'
+        // )
+        // invariant(
+        //   typeof output === 'undefined' ||
+        //     (route[route.length - 1].pairs.every(pair => pair.involvesToken(output))),
+        //   'OUTPUT'
+        // )
         const path = [];
         for (const split of route) {
             const splitPath = {

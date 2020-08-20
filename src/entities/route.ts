@@ -32,15 +32,15 @@ export class Route {
         route.every(split => split.pairs.every(pair => chainId === pair.chainId)),
       'CHAIN_IDS'
     )
-    invariant(
-      (route[0].pairs.every(pair => pair.involvesToken(input))),
-      'INPUT'
-    )
-    invariant(
-      typeof output === 'undefined' ||
-        (route[route.length - 1].pairs.every(pair => pair.involvesToken(output))),
-      'OUTPUT'
-    )
+    // invariant(
+    //   (route[0].pairs.every(pair => pair.involvesToken(input))),
+    //   'INPUT'
+    // )
+    // invariant(
+    //   typeof output === 'undefined' ||
+    //     (route[route.length - 1].pairs.every(pair => pair.involvesToken(output))),
+    //   'OUTPUT'
+    // )
 
     const path: SpitPath[] = []
     for (const split of route) {

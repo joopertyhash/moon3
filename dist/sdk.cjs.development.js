@@ -894,13 +894,16 @@ var Route = /*#__PURE__*/function () {
       return split.pairs.every(function (pair) {
         return chainId === pair.chainId;
       });
-    }) ?  invariant(false, 'CHAIN_IDS')  : void 0;
-    !route[0].pairs.every(function (pair) {
-      return pair.involvesToken(input);
-    }) ?  invariant(false, 'INPUT')  : void 0;
-    !(typeof output === 'undefined' || route[route.length - 1].pairs.every(function (pair) {
-      return pair.involvesToken(output);
-    })) ?  invariant(false, 'OUTPUT')  : void 0;
+    }) ?  invariant(false, 'CHAIN_IDS')  : void 0; // invariant(
+    //   (route[0].pairs.every(pair => pair.involvesToken(input))),
+    //   'INPUT'
+    // )
+    // invariant(
+    //   typeof output === 'undefined' ||
+    //     (route[route.length - 1].pairs.every(pair => pair.involvesToken(output))),
+    //   'OUTPUT'
+    // )
+
     var path = [];
 
     for (var _iterator = _createForOfIteratorHelperLoose(route), _step; !(_step = _iterator()).done;) {
